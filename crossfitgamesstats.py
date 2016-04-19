@@ -32,9 +32,11 @@ for r in range(1,len(rows)):
 	wk3 = lines[4].get_text().strip()
 	wk4 = lines[5].get_text().strip()
 	wk5 = lines[6].get_text().strip()
+	athlete_url = temp_row.find('a').get('href')
 
 	# print(name+', '+place)
-	print(wk1, wk2, wk3, wk4, wk5)
+	# print(wk1, wk2, wk3, wk4, wk5)
+	# print(url)
 
 	break
 
