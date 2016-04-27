@@ -23,7 +23,7 @@ def makeurl(reg, div=1, num=100, sort=0, yr=16):
 
 def get_region(reg,div=1,num=100,sort=0,yr=16):
 	"""Get open data for 1 region of 1 division"""
-	cfg_url = makeurl(reg,div,yr)  # create region leaderboard url
+	cfg_url = makeurl(reg,div,num,sort,yr)  # create region leaderboard url
 
 	response = urllib.request.urlopen(cfg_url)
 	html = response.read()
@@ -181,12 +181,16 @@ def get_athlete_data(df):
 			age.append(np.nan)
 		try:
 			if a_dict["Height"][-2:] == "cm":  # account for the royale with cheese
+				# print("metric system")
 				cms = a_dict["Height"].split()[0]
-				temp_height = cms / 2.54
+				# print(cms)
+				temp_height = round(int(cms) / 2.54, 2)
+				# print("sup")
+				# print(temp_height)
 			else:
 				feet, inches = a_dict["Height"].split("'")  # imperial measure was messing up to_csv, so converting all heights to inches
 				# print(feet, inches)
-				temp_height = ((int(feet) * 12) + int(inches[:-1])) * 1.0  # convert to float
+				temp_height = round(((int(feet) * 12) + int(inches[:-1])) * 1.0, 2)  # convert to float
 			height.append(temp_height)
 		except:
 			height.append(np.nan)
@@ -237,14 +241,14 @@ regions = (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 
 
 def get_division(regs,div,num=100,sort=0,yr=16):
-	cfg_df = get_all_regions(regs,div,100,0,16)
+	cfg_df = get_all_regions(regs,div,num,0,16)
 	csv_name = "cfg_open_results_" + str(div) + ".csv"
 	cfg_df.to_csv(csv_name, index=True)
 	# print(cfg_df.head())	
 	return None
 
 
-get_division(regions,1,100,0,16)
+# get_division(regions,1,100,0,16)
 
 cfg_1 = pd.read_csv("cfg_open_results_1.csv")
 # print(cfg_1.describe())
