@@ -248,6 +248,43 @@ def get_division(regs,div,num=100,sort=0,yr=16):
 	return None
 
 
+def convert_weight(weight):
+	"""Input weight as a string, determines kg or lb and returns float in lbs."""
+	try:  num, unit = weight.split()
+	except:  return np.nan
+
+	if unit == "lb":  return round(int(num) * 1.0, 2)
+	else:  return round(int(num) * 2.20462, 2)
+
+
+def convert_time(time):
+	"""Input time as a string, return seconds."""
+	try:  minutes, seconds = time.split(":")
+	except:  return np.nan
+
+	time_in_seconds = int(minutes) * 60 + int(seconds)
+	if time_in_seconds == 0:  return np.nan
+	else:  return time_in_seconds
+
+
+def transform_data(df):
+
+	df['Weight'] = df['Weight'].apply(convert_weight)
+	df['Clean_And_Jerk'] = df['Clean_And_Jerk'].apply(convert_weight)
+	df['Snatch'] = df['Snatch'].apply(convert_weight)
+	df['Deadlift'] = df['Deadlift'].apply(convert_weight)
+	df['Back_Squat'] = df['Back_Squat'].apply(convert_weight)
+
+	df['Fran'] = df['Fran'].apply(convert_time)
+	df['Helen'] = df['Helen'].apply(convert_time)
+	df['Grace'] = df['Grace'].apply(convert_time)
+	df['Filthy_50'] = df['Filthy_50'].apply(convert_time)
+	df['Sprint_400'] = df['Sprint_400'].apply(convert_time)
+	df['Run_5k'] = df['Run_5k'].apply(convert_time)
+
+	return df
+
+
 # get_division(regions,1,100,0,16)
 
 # cfg_1 = pd.read_csv("cfg_open_results_1.csv")
@@ -257,8 +294,15 @@ def get_division(regs,div,num=100,sort=0,yr=16):
 # cfg_1.to_csv("cfg_open_results_1b.csv", quoting=None)
 
 
-get_division(regions,2,100,0,16)
+# get_division(regions,2,100,0,16)
 
-cfg_2 = pd.read_csv("cfg_open_results_2.csv")
-cfg_2 = get_athlete_data(cfg_2)
-cfg_2.to_csv("cfg_open_results_2b.csv", quoting=None)
+# cfg_2 = pd.read_csv("cfg_open_results_2.csv")
+# cfg_2 = get_athlete_data(cfg_2)
+# cfg_2.to_csv("cfg_open_results_2b.csv", quoting=None)
+
+cfg_1 = pd.read_csv("cfg_open_results_1b.csv")
+cfg_1 = transform_data(cfg_1)
+
+print(cfg_1['Weight'].head())
+print(cfg_1['Fran'].head())
+print(cfg_1.describe())
