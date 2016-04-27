@@ -250,8 +250,15 @@ def get_division(regs,div,num=100,sort=0,yr=16):
 
 # get_division(regions,1,100,0,16)
 
-cfg_1 = pd.read_csv("cfg_open_results_1.csv")
-# print(cfg_1.describe())
-cfg_1 = get_athlete_data(cfg_1)
-# print(cfg_1.head())
-cfg_1.to_csv("cfg_open_results_1b.csv", quoting=None)
+# cfg_1 = pd.read_csv("cfg_open_results_1.csv")
+# # print(cfg_1.describe())
+# cfg_1 = get_athlete_data(cfg_1)
+# # print(cfg_1.head())
+# cfg_1.to_csv("cfg_open_results_1b.csv", quoting=None)
+
+
+get_division(regions,2,100,0,16)
+
+cfg_2 = pd.read_csv("cfg_open_results_2.csv")
+cfg_2 = get_athlete_data(cfg_2)
+cfg_2.to_csv("cfg_open_results_2b.csv", quoting=None)
