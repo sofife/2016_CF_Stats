@@ -267,7 +267,9 @@ def convert_time(time):
 	else:  return time_in_seconds
 
 
-def transform_data(df):
+def transform_data(filename, return_df=False):
+	"""Open csv, transform dataframe, write csv.  Optional return dataframe with True."""
+	df = pd.read_csv(filename)
 
 	df['Weight'] = df['Weight'].apply(convert_weight)
 	df['Clean_And_Jerk'] = df['Clean_And_Jerk'].apply(convert_weight)
@@ -282,7 +284,10 @@ def transform_data(df):
 	df['Sprint_400'] = df['Sprint_400'].apply(convert_time)
 	df['Run_5k'] = df['Run_5k'].apply(convert_time)
 
-	return df
+	df.to_csv(filename)
+
+	if return_df: return df
+	return None
 
 
 # get_division(regions,1,100,0,16)
@@ -300,8 +305,12 @@ def transform_data(df):
 # cfg_2 = get_athlete_data(cfg_2)
 # cfg_2.to_csv("cfg_open_results_2b.csv", quoting=None)
 
-cfg_1 = pd.read_csv("cfg_open_results_1b.csv")
-cfg_1 = transform_data(cfg_1)
+# cfg_1 = pd.read_csv("cfg_open_results_1b.csv")
+# cfg_1 = transform_data(cfg_1)
+
+filename_list = ['cfg_open_results_1b', 'cfg_open_results_2b']
+
+transform_data()
 
 print(cfg_1['Weight'].head())
 print(cfg_1['Fran'].head())
