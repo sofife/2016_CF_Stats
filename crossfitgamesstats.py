@@ -267,16 +267,46 @@ def convert_time(time):
 	else:  return time_in_seconds
 
 
+def split_score(place_score):
+	"""Input a '# (##)' score and return place & score as ints."""
+	place, score = place_score.split()
+	place = int(place)
+
+	if ":" in score:
+		score = convert_time(score[1:-1])  # score is a time, convert to seconds, int
+	else:
+		score = int(score[1:-1])  # score is reps, convert to int
+	
+	return place, score
+
+
 def transform_data(filename, return_df=False):
 	"""Open csv, transform dataframe, write csv.  Optional return dataframe with True."""
 	df = pd.read_csv(filename)
 
+	# Convert place (score) to 2 columns
+	df['Reg_Finish'] = df['Reg_Place']
+	df['Reg_Place'] = df['Reg_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Score'] = df['Reg_Finish'].apply(lambda x: split_score(x)[1])
+	df['Wk1_Place'] = df['Wk1'].apply(lambda x: split_score(x)[0])
+	df['Wk1_Score'] = df['Wk1'].apply(lambda x: split_score(x)[1])
+	df['Wk2_Place'] = df['Wk2'].apply(lambda x: split_score(x)[0])
+	df['Wk2_Score'] = df['Wk2'].apply(lambda x: split_score(x)[1])
+	df['Wk3_Place'] = df['Wk3'].apply(lambda x: split_score(x)[0])
+	df['Wk3_Score'] = df['Wk3'].apply(lambda x: split_score(x)[1])
+	df['Wk4_Place'] = df['Wk4'].apply(lambda x: split_score(x)[0])
+	df['Wk4_Score'] = df['Wk4'].apply(lambda x: split_score(x)[1])
+	df['Wk5_Place'] = df['Wk5'].apply(lambda x: split_score(x)[0])
+	df['Wk5_Score'] = df['Wk5'].apply(lambda x: split_score(x)[1])
+
+	# Convert weights to pounds with no units
 	df['Weight'] = df['Weight'].apply(convert_weight)
 	df['Clean_And_Jerk'] = df['Clean_And_Jerk'].apply(convert_weight)
 	df['Snatch'] = df['Snatch'].apply(convert_weight)
 	df['Deadlift'] = df['Deadlift'].apply(convert_weight)
 	df['Back_Squat'] = df['Back_Squat'].apply(convert_weight)
 
+	# Convert times to seconds
 	df['Fran'] = df['Fran'].apply(convert_time)
 	df['Helen'] = df['Helen'].apply(convert_time)
 	df['Grace'] = df['Grace'].apply(convert_time)
@@ -284,10 +314,21 @@ def transform_data(filename, return_df=False):
 	df['Sprint_400'] = df['Sprint_400'].apply(convert_time)
 	df['Run_5k'] = df['Run_5k'].apply(convert_time)
 
-	df.to_csv(filename)
+	# Convert '--' to NaN
+	df.loc[df['Fight_Gone_Bad'] == '--', 'Fight_Gone_Bad'] = np.nan
+	df.loc[df['Max_Pullups'] == '--', 'Max_Pullups'] = np.nan
 
-	if return_df: return df
+	new_filename = filename[:-5] + "c.csv"
+	df.to_csv(new_filename, index=False)
+
+	if return_df: return df  # if option is True, return the dataframe
 	return None
+
+
+def combine_divisions(df1,df2):
+	"""Enter 2 identical dataframes from different divisions and return a combined dataframe."""
+	return pd.concat([df1,df2])
+
 
 
 # get_division(regions,1,100,0,16)
@@ -308,10 +349,19 @@ def transform_data(filename, return_df=False):
 # cfg_1 = pd.read_csv("cfg_open_results_1b.csv")
 # cfg_1 = transform_data(cfg_1)
 
-filename_list = ['cfg_open_results_1b', 'cfg_open_results_2b']
+filename_list = ['cfg_open_results_1b.csv', 'cfg_open_results_2b.csv']
 
-transform_data()
+transform_data(filename_list[0], False)
+transform_data(filename_list[1], False)
 
-print(cfg_1['Weight'].head())
-print(cfg_1['Fran'].head())
-print(cfg_1.describe())
+div1 = pd.read_csv('cfg_open_results_1c.csv')
+div2 = pd.read_csv('cfg_open_results_2c.csv')
+
+all_cfg = combine_divisions(div1, div2)
+print(all_cfg.describe())
+all_cfg.to_csv('cfg_open_all.csv')
+
+# cfg_1 = transform_data(filename_list[0], True)
+# print(cfg_1['Reg_Score'].head())
+# print(cfg_1['Reg_Place'].head())
+# print(cfg_1.describe())
