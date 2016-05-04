@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np # for NaN
 
 
-def makeurl(reg, div=1, num=100, sort=0, yr=16):
+def makeurl(reg,div=1,num=100,page=1,sort=0,yr=16):
 	"""Makes the URL to pull data for each region, currently only pulls frontpage of leaderboard."""
 	lead = "http://games.crossfit.com/scores/leaderboard.php?stage=5&regional=2&userid=0&competition=0&frontpage=0&expanded=1&full=0&showtoggles=0&hidedropdowns=1&showathleteac=0&athletename=&scaled=0&"
 	# variable items in url
@@ -12,18 +12,19 @@ def makeurl(reg, div=1, num=100, sort=0, yr=16):
 	division = "division=" + str(div) + "&"  # 1-individual men, 2-ind. women, 3-masters men 45-49, 4-masters women 45-49, ...
 	region = "region=" + str(reg) + "&"  # 0-worldwide, 1-africa, 2-asia, 3-australia, 4-canada east, 5-canada west, 6-central east, 7-europe, ...
 	year = "year=" + str(yr) + "&"  # 2-digit year "16"
-	num_per = "numberperpage=" + str(num)  # works up to at least 100, number of athletes per leaderboard page
+	num_per = "numberperpage=" + str(num) + "&"  # works up to at least 100, number of athletes per leaderboard page
+	page = "page=" + str(page)
 
-	tail = sort + division + region + year + num_per
+	tail = sort + division + region + year + num_per + page
 	
 	return lead + tail
 
 # cfg_url = "http://games.crossfit.com/scores/leaderboard.php?stage=5&sort=0&division=1&region=1&regional=2&numberperpage=10&userid=0&competition=0&frontpage=0&expanded=1&year=16&full=0&showtoggles=0&hidedropdowns=1&showathleteac=0&athletename=&scaled=0"
 
 
-def get_region(reg,div=1,num=100,sort=0,yr=16):
+def get_leaderboard_page(reg,div=1,num=100,page=1,sort=0,yr=16):
 	"""Get open data for 1 region of 1 division"""
-	cfg_url = makeurl(reg,div,num,sort,yr)  # create region leaderboard url
+	cfg_url = makeurl(reg,div,num,page,sort,yr)  # create region leaderboard url
 
 	response = urllib.request.urlopen(cfg_url)
 	html = response.read()
@@ -61,14 +62,14 @@ def get_region(reg,div=1,num=100,sort=0,yr=16):
 	df = pd.DataFrame({'Athlete':name,
 					   'Year':yr,
 					   'Region':reg,
-					   'Reg_Place':place,
-					   'Reg_Score':0,
+					   'Finish':place,
 					   'Wk1':wk1,
 					   'Wk2':wk2,
 					   'Wk3':wk3,
 					   'Wk4':wk4,
 					   'Wk5':wk5,
 					   'Athlete_URL':athlete_url,
+					   'User_ID':0,
 					   'Age':0,
 					   'Height':0,
 					   'Weight':0,
@@ -77,15 +78,15 @@ def get_region(reg,div=1,num=100,sort=0,yr=16):
 	return df
 
 
-def get_all_regions(regs,div=1,num=100,sort=0,yr=16):
+def get_all_regions(regs,div=1,num=100,page=1,sort=0,yr=16):
 	"""Loop through all regions and append dataframes"""
-	cfg_data = get_region(regs[0],div,num,sort,yr)  # first region
+	cfg_data = get_leaderboard_page(regs[0],div,num,page,sort,yr)  # first region
 	
 	if len(regs) == 1:
 		return cfg_data
 
 	for r in regs[1:]:
-		temp_df = get_region(r,div,num,sort,yr)  # next region
+		temp_df = get_leaderboard_page(r,div,num,page,sort,yr)  # next region
 		cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
 
 	return cfg_data
@@ -94,7 +95,7 @@ def get_all_regions(regs,div=1,num=100,sort=0,yr=16):
 def get_athlete_data(df):
 	"""Function to scrape athlete data from profile pages"""
 	url_list = list(df['Athlete_URL'])  # list of all athlete profile urls
-	# url_list = ["http://games.crossfit.com/athlete/10822"] # test athlete profile with no team or affiliate
+	# url_list = ["http://games.crossfit.com/athlete/234504"] # test athlete profile with no team or affiliate
 
 	region = []
 	team = []
@@ -125,7 +126,7 @@ def get_athlete_data(df):
 		html = response.read()
 		page = bs(html, 'html.parser')
 		page_str = str(page)  # change bs html object to string
-		trim_start = page_str.find("Athlete Profile") + 453  # trim html
+		trim_start = page_str.find("Athlete Profile")  # trim html
 		
 		if "ATHLETE INFORMATION" not in page_str:  # if no athlete profile, set all to NaN
 			region.append(np.nan)
@@ -150,7 +151,7 @@ def get_athlete_data(df):
 			print("Profile Missing")
 			continue
 
-		trim_end = page_str.find("ATHLETE INFORMATION") - 277  # set ending trim point for html string
+		trim_end = page_str.find("ATHLETE INFORMATION")  # set ending trim point for html string
 		page_bs = bs(page_str[trim_start:trim_end], 'html.parser')  # trim html and convert back to bs object
 		dimensions = page_bs.find_all("dt")  # category names
 		stats = page_bs.find_all("dd")  # category data
@@ -240,7 +241,7 @@ regions = (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 # regions = [17]
 
 
-def get_division(regs,div,num=100,sort=0,yr=16):
+def get_division(regs,div,num=100,page=1,sort=0,yr=16):
 	cfg_df = get_all_regions(regs,div,num,0,16)
 	csv_name = "cfg_open_results_" + str(div) + ".csv"
 	cfg_df.to_csv(csv_name, index=True)
@@ -285,9 +286,8 @@ def transform_data(filename, return_df=False):
 	df = pd.read_csv(filename)
 
 	# Convert place (score) to 2 columns
-	df['Reg_Finish'] = df['Reg_Place']
-	df['Reg_Place'] = df['Reg_Finish'].apply(lambda x: split_score(x)[0])
-	df['Reg_Score'] = df['Reg_Finish'].apply(lambda x: split_score(x)[1])
+	df['Place'] = df['Finish'].apply(lambda x: split_score(x)[0])
+	df['Score'] = df['Finish'].apply(lambda x: split_score(x)[1])
 	df['Wk1_Place'] = df['Wk1'].apply(lambda x: split_score(x)[0])
 	df['Wk1_Score'] = df['Wk1'].apply(lambda x: split_score(x)[1])
 	df['Wk2_Place'] = df['Wk2'].apply(lambda x: split_score(x)[0])
@@ -318,6 +318,9 @@ def transform_data(filename, return_df=False):
 	df.loc[df['Fight_Gone_Bad'] == '--', 'Fight_Gone_Bad'] = np.nan
 	df.loc[df['Max_Pullups'] == '--', 'Max_Pullups'] = np.nan
 
+	# Convert / Add other stuff
+	df['User_ID'] = df['Athlete_URL'].apply(lambda x: x.split("/")[-1])
+
 	new_filename = filename[:-5] + "c.csv"
 	df.to_csv(new_filename, index=False)
 
@@ -329,6 +332,20 @@ def combine_divisions(df1,df2):
 	"""Enter 2 identical dataframes from different divisions and return a combined dataframe."""
 	return pd.concat([df1,df2])
 
+
+def get_ww(reg=0,div=1,num=100,pages=1,sort=0,yr=16):
+	"""Get results for specified number of athletes worldwide place and score"""
+	cfg_data = get_leaderboard_page(reg,div,num,1,sort,yr)  # first region
+	
+	if pages == 1:
+		return cfg_data
+
+	for p in range(2, pages+1):
+		print(p)
+		temp_df = get_leaderboard_page(reg,div,num,p,sort,yr)  # next region
+		cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
+
+	return cfg_data
 
 
 # get_division(regions,1,100,0,16)
@@ -349,19 +366,28 @@ def combine_divisions(df1,df2):
 # cfg_1 = pd.read_csv("cfg_open_results_1b.csv")
 # cfg_1 = transform_data(cfg_1)
 
-filename_list = ['cfg_open_results_1b.csv', 'cfg_open_results_2b.csv']
+# filename_list = ['cfg_open_results_1b.csv', 'cfg_open_results_2b.csv']
 
-transform_data(filename_list[0], False)
-transform_data(filename_list[1], False)
+# transform_data(filename_list[0], False)
+# transform_data(filename_list[1], False)
 
-div1 = pd.read_csv('cfg_open_results_1c.csv')
-div2 = pd.read_csv('cfg_open_results_2c.csv')
+# div1 = pd.read_csv('cfg_open_results_1c.csv')
+# div2 = pd.read_csv('cfg_open_results_2c.csv')
 
-all_cfg = combine_divisions(div1, div2)
-print(all_cfg.describe())
-all_cfg.to_csv('cfg_open_all.csv')
+# all_cfg = combine_divisions(div1, div2)
+# print(all_cfg.describe())
+# all_cfg.to_csv('cfg_open_all.csv')
 
-# cfg_1 = transform_data(filename_list[0], True)
-# print(cfg_1['Reg_Score'].head())
-# print(cfg_1['Reg_Place'].head())
-# print(cfg_1.describe())
+
+# ww_df = get_ww(0,1,100,20,0,16)  # region=0 (worldwide),division=1 (ind. men),number per page=100,pages=1,sort=0 (overall),yr=16 (2016)
+# print(ww_df.head())
+# ww_df.to_csv("cfo_ww_1.csv", index=False)
+# ww_df = pd.read_csv("cfo_ww_1.csv")
+# ww_df = get_athlete_data(ww_df)
+
+# ww_df.to_csv("cfo_ww_1b.csv", quoting=None)
+
+# ww_df = pd.read_csv('cfo_ww_1b2.csv')
+# print("Load")
+ww_df = transform_data('cfo_ww_1b.csv', True)
+print(ww_df.head())
