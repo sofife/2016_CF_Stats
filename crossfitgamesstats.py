@@ -78,17 +78,69 @@ def get_leaderboard_page(reg,div=1,num=100,page=1,sort=0,yr=16):
 	return df
 
 
-def get_all_regions(regs,div=1,num=100,page=1,sort=0,yr=16):
-	"""Loop through all regions and append dataframes"""
-	cfg_data = get_leaderboard_page(regs[0],div,num,page,sort,yr)  # first region
+def get_regional_page(reg,div=101):
+	"""Get regional data for 1 regional of 1 division"""
 	
+	lead = "http://games.crossfit.com/scores/leaderboard.php?stage=0&sort=0&"
+	tail = "region=0&numberperpage=100&page=0&competition=1&frontpage=0&expanded=1&full=1&year=16&showtoggles=0&hidedropdowns=0&showathleteac=1&athletename=&fittest=1&fitSelect=undefined&scaled=0&occupation=0"
+	division = "division=" + str(div) + "&"
+	regional = "regional=" + str(reg)
+	cfg_url = lead + division + regional + tail
+	print(cfg_url)
+
+	response = urllib.request.urlopen(cfg_url)
+	html = response.read()
+	page = bs(html, 'html.parser')
+	scores_table = page.table  # grab just the table from the html
+	rows = str(scores_table).split('<tr class')  # convert bs html to string, split data into athlete blocks
+
+	q_place = [] # initialize temporary lists
+	name = []
+	status = []
+	athlete_url = []
+
+	for r in range(1,len(rows)):
+		temp_row = bs(rows[r][5:], 'html.parser')  # strip broken tag off beginning, return to BeautifulSoup object
+		lines = temp_row.find_all('td')  # break into individual data
+		# for l in lines:
+			# print(l.get_text())
+		n,q = lines[1].get_text().strip().split("(")
+		# print(n, q[:-1])
+		# break
+
+		name.append(n)  # athlete name
+		q_place.append(q[:-1])  # athlete name
+		status.append(lines[2].get_text().strip())  # open wk 1 place
+		athlete_url.append(temp_row.find('a').get('href'))  # athlete profile link url
+
+	df = pd.DataFrame({'Athlete':name,
+					   'Q_Place':q_place,
+					   'Regional':reg,
+					   'Status':status,
+					   'Athlete_URL':athlete_url,
+					   'Division':div})
+
+	return df
+	# return None
+
+
+def get_all_regions(regs,div=1,num=100,pages=1,sort=0,yr=16):
+	"""Loop through all regions and append dataframes"""
+	
+	cfg_data = get_leaderboard_page(regs[0],div,num,1,sort,yr)  # first region	
+	for p in range(2, pages+1):  # get all pages of first region
+		# print(p)
+		temp_df = get_leaderboard_page(regs[0],div,num,p,sort,yr)
+		cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
+
 	if len(regs) == 1:
 		return cfg_data
 
 	for r in regs[1:]:
-		temp_df = get_leaderboard_page(r,div,num,page,sort,yr)  # next region
-		cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
-
+		for p in range(1, pages+1):
+			temp_df = get_leaderboard_page(r,div,num,p,sort,yr)  # next region
+			cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
+	
 	return cfg_data
 
 
@@ -320,6 +372,7 @@ def transform_data(filename, return_df=False):
 
 	# Convert / Add other stuff
 	df['User_ID'] = df['Athlete_URL'].apply(lambda x: x.split("/")[-1])
+	# df['Region'] = 
 
 	new_filename = filename[:-5] + "c.csv"
 	df.to_csv(new_filename, index=False)
@@ -337,15 +390,37 @@ def get_ww(reg=0,div=1,num=100,pages=1,sort=0,yr=16):
 	"""Get results for specified number of athletes worldwide place and score"""
 	cfg_data = get_leaderboard_page(reg,div,num,1,sort,yr)  # first region
 	
-	if pages == 1:
-		return cfg_data
+	# if pages == 1:
+	# 	return cfg_data
 
-	for p in range(2, pages+1):
-		print(p)
+	for p in range(1, pages+1):
+		# print(p)
 		temp_df = get_leaderboard_page(reg,div,num,p,sort,yr)  # next region
 		cfg_data = pd.concat([cfg_data,temp_df])  # add to bottom of primary df
 
 	return cfg_data
+
+
+def get_all_regional_data():
+	regionals = [1,2,3,4,5,6,7,8]
+	divisions = [101,201]
+
+	first = True
+	# regional_df = None
+
+	for d in divisions:
+		for r in regionals:
+			if first:
+				regional_df = get_regional_page(r,d)
+				first = False
+				continue
+			temp_df = get_regional_page(r,d)
+			regional_df = pd.concat([regional_df,temp_df])
+
+	return regional_df
+
+
+
 
 
 # get_division(regions,1,100,0,16)
@@ -389,5 +464,13 @@ def get_ww(reg=0,div=1,num=100,pages=1,sort=0,yr=16):
 
 # ww_df = pd.read_csv('cfo_ww_1b2.csv')
 # print("Load")
-ww_df = transform_data('cfo_ww_1b.csv', True)
-print(ww_df.head())
+# ww_df = transform_data('cfo_ww_1b.csv', True)
+# print(ww_df.head())
+
+# reg_df = get_all_regions(regions,div=1,num=100,pages=3,sort=0,yr=16)
+# print(reg_df.describe())
+# reg_df.to_csv("cfo_reg_300_1.csv", index=False)
+
+rg_df = get_all_regional_data()
+print(rg_df.describe())
+rg_df.to_csv('cf_regional_invites.csv', index=False)
