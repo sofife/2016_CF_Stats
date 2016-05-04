@@ -1,0 +1,18 @@
+Regional_Name,Regional,Region_Name,Region,Qualifiers,Actual_Qualifiers
+California,1,NorCal,12,20,28
+California,1,SoCal,16,20,24
+South,2,LatAm,8,10,14
+South,2,"South Central",14,20,25
+South,2,"South West",17,20,24
+Pacific,3,Australia,3,30,31
+Pacific,3,Asia,2,10,10
+West,4,"North West",13,20,25
+West,4,"Canada West",5,20,23
+Atlantic,5,"Mid Atlantic",9,20,22
+Atlantic,5,"South East",15,20,26
+Central,6,"Central East",6,20,27
+Central,6,"North Central",10,20,21
+Meridian,7,Europe,7,30,32
+Meridian,7,Africa,1,10,11
+East,8,"North East",11,20,20
+East,8,"Canada East",6,20,24
