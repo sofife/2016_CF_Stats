@@ -372,12 +372,76 @@ def transform_data(filename, return_df=False):
 
 	# Convert / Add other stuff
 	df['User_ID'] = df['Athlete_URL'].apply(lambda x: x.split("/")[-1])
-	# df['Region'] = 
 
 	new_filename = filename[:-5] + "c.csv"
 	df.to_csv(new_filename, index=False)
 
 	if return_df: return df  # if option is True, return the dataframe
+	return None
+
+
+def add_regional_data(df_file,r_df_file,q_df_file,i_df_file,div):
+	"""Add regional data to primary df."""
+	# ath_list = list(df['Athlete_URL'])
+	df = pd.read_csv(df_file)
+	r_df = pd.read_csv(r_df_file)
+	q_df = pd.read_csv(q_df_file)
+	i_df = pd.read_csv(i_df_file)
+
+	r_df['User_ID'] = r_df['Athlete_URL'].apply(lambda x: x.split("/")[-1])
+	i_df['User_ID'] = i_df['Athlete_URL'].apply(lambda x: x.split("/")[-1])
+
+
+	# from r_df -> Regional Statistics File, Top 300 from each Region
+	df['Region'] = df['User_ID'].apply(lambda x: int(r_df.loc[r_df['User_ID'] == str(x), 'Region']))
+	df['Reg_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Finish'].values[0]))
+	df['Reg_Place'] = df['Reg_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Score'] = df['Reg_Finish'].apply(lambda x: split_score(x)[1])
+	# df['Reg_Wk1_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	# df['Reg_Wk1_Place'] = df['Reg_Wk1_Finish'].apply(lambda x: split_score(x)[0])
+	# df['Reg_Wk2_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	# df['Reg_Wk2_Place'] = df['Reg_Wk2_Finish'].apply(lambda x: split_score(x)[0])
+	# df['Reg_Wk3_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	# df['Reg_Wk3_Place'] = df['Reg_Wk3_Finish'].apply(lambda x: split_score(x)[0])
+	# df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	# df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
+	# df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	# df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
+
+	# from q_df -> cutoff by region, and regional data
+	df['Regional'] = df['Region'].apply(lambda x: int(q_df.loc[q_df['Region'].astype(int) == x, 'Regional'].values[0]))
+	df['Regional_Name'] = df['Region'].apply(lambda x: str(q_df.loc[q_df['Region'].astype(int) == x, 'Regional_Name'].values[0]))
+	df['Region_Name'] = df['Region'].apply(lambda x: str(q_df.loc[q_df['Region'].astype(int) == x, 'Region_Name'].values[0]))
+	df['Reg_Cutoff'] = df['Region'].apply(lambda x: int(q_df.loc[q_df['Region'].astype(int) == x, 'Qualifiers'].values[0]))
+	if div == 1:
+		df['Reg_Actual'] = df['Region'].apply(lambda x: int(q_df.loc[q_df['Region'].astype(int) == x, 'Actual_1'].values[0]))
+	elif div == 2:
+		df['Reg_Actual'] = df['Region'].apply(lambda x: int(q_df.loc[q_df['Region'].astype(int) == x, 'Actual_2'].values[0]))
+	else:
+		df['Reg_Actual'] = df['Reg_Cutoff']
+	df['Reg_Auto_Qualify'] = np.where(df['Reg_Place'] <= df['Reg_Cutoff'], 1, 0)
+	df['Reg_Actual_Qualify'] = np.where(df['Reg_Place'] <= df['Reg_Actual'], 1, 0)
+
+	# from i_df -> who was invited and who decline or chose team
+	# df['Status'] = df['User_ID'].apply(lambda x: str(i_df.loc[i_df['User_ID'] == str(x), 'Status'].values[0]))
+	# df['Status'] = 
+
+# df['color'] = np.where(df['Set']=='Z', 'green', 'red')
+# df['color'] = ['red' if x == 'Z' else 'green' for x in df['Set']]
+
+	print("GOOD")
+	# print(ath_dict)
+	print(df['Region_Name'].head())
+	print(df['Regional_Name'].head())
+	print(df['Status'].head())
+	# print(df['Reg_Cutoff'].head())
+	# print(df['Reg_Actual'].head())
+	# print(df['Reg_Auto_Qualify'].sum())
+	# print(df['Reg_Actual_Qualify'].sum())
+	# print(df['Reg_Finish'].head())
+	# print(df['Reg_Place'].head())
+	# print(df['Reg_Wk1_Place'].head())
+
 	return None
 
 
@@ -471,6 +535,8 @@ def get_all_regional_data():
 # print(reg_df.describe())
 # reg_df.to_csv("cfo_reg_300_1.csv", index=False)
 
-rg_df = get_all_regional_data()
-print(rg_df.describe())
-rg_df.to_csv('cf_regional_invites.csv', index=False)
+# rg_df = get_all_regional_data()
+# print(rg_df.describe())
+# rg_df.to_csv('cf_regional_invites.csv', index=False)
+
+add_regional_data('cfo_ww_1c.csv', 'cfo_reg_300_1.csv', 'cf_regional_qualifiers.csv', 'cfo_reg_invites.csv',1)
