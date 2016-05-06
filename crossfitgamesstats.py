@@ -312,10 +312,13 @@ def convert_weight(weight):
 
 def convert_time(time):
 	"""Input time as a string, return seconds."""
-	try:  minutes, seconds = time.split(":")
+	try:  
+		minutes = time.split(":")[0]
+		seconds = time.split(":")[1]
 	except:  return np.nan
 
 	time_in_seconds = int(minutes) * 60 + int(seconds)
+
 	if time_in_seconds == 0:  return np.nan
 	else:  return time_in_seconds
 
@@ -380,7 +383,7 @@ def transform_data(filename, return_df=False):
 	return None
 
 
-def add_regional_data(df_file,r_df_file,q_df_file,i_df_file,div):
+def add_regional_data(df_file,r_df_file,q_df_file,i_df_file,div,return_df=False):
 	"""Add regional data to primary df."""
 	# ath_list = list(df['Athlete_URL'])
 	df = pd.read_csv(df_file)
@@ -397,16 +400,16 @@ def add_regional_data(df_file,r_df_file,q_df_file,i_df_file,div):
 	df['Reg_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Finish'].values[0]))
 	df['Reg_Place'] = df['Reg_Finish'].apply(lambda x: split_score(x)[0])
 	df['Reg_Score'] = df['Reg_Finish'].apply(lambda x: split_score(x)[1])
-	# df['Reg_Wk1_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
-	# df['Reg_Wk1_Place'] = df['Reg_Wk1_Finish'].apply(lambda x: split_score(x)[0])
-	# df['Reg_Wk2_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
-	# df['Reg_Wk2_Place'] = df['Reg_Wk2_Finish'].apply(lambda x: split_score(x)[0])
-	# df['Reg_Wk3_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
-	# df['Reg_Wk3_Place'] = df['Reg_Wk3_Finish'].apply(lambda x: split_score(x)[0])
-	# df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
-	# df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
-	# df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
-	# df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Wk1_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	df['Reg_Wk1_Place'] = df['Reg_Wk1_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Wk2_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	df['Reg_Wk2_Place'] = df['Reg_Wk2_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Wk3_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	df['Reg_Wk3_Place'] = df['Reg_Wk3_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
+	df['Reg_Wk4_Finish'] = df['User_ID'].apply(lambda x: str(r_df.loc[r_df['User_ID'] == str(x), 'Wk1'].values[0]))
+	df['Reg_Wk4_Place'] = df['Reg_Wk4_Finish'].apply(lambda x: split_score(x)[0])
 
 	# from q_df -> cutoff by region, and regional data
 	df['Regional'] = df['Region'].apply(lambda x: int(q_df.loc[q_df['Region'].astype(int) == x, 'Regional'].values[0]))
@@ -423,25 +426,17 @@ def add_regional_data(df_file,r_df_file,q_df_file,i_df_file,div):
 	df['Reg_Actual_Qualify'] = np.where(df['Reg_Place'] <= df['Reg_Actual'], 1, 0)
 
 	# from i_df -> who was invited and who decline or chose team
-	# df['Status'] = df['User_ID'].apply(lambda x: str(i_df.loc[i_df['User_ID'] == str(x), 'Status'].values[0]))
-	# df['Status'] = 
+	df['Status'] = df['User_ID'].apply(lambda x: str(i_df.loc[i_df['User_ID'] == str(x), 'Status'].values))
+	df['Status'] = ['Out' if len(x)==2 else str(x[2:-2]) for x in df['Status']]
+	df['Status_Code'] = 0
+	df.loc[df['Status']=='Accepted', 'Status_Code'] = 1
+	df.loc[df['Status']=='Team', 'Status_Code'] = 2
+	df.loc[df['Status']=='Declined', 'Status_Code'] = 3
 
-# df['color'] = np.where(df['Set']=='Z', 'green', 'red')
-# df['color'] = ['red' if x == 'Z' else 'green' for x in df['Set']]
+	# df['color'] = np.where(df['Set']=='Z', 'green', 'red')  # examples
+	# df['color'] = ['red' if x == 'Z' else 'green' for x in df['Set']]
 
-	print("GOOD")
-	# print(ath_dict)
-	print(df['Region_Name'].head())
-	print(df['Regional_Name'].head())
-	print(df['Status'].head())
-	# print(df['Reg_Cutoff'].head())
-	# print(df['Reg_Actual'].head())
-	# print(df['Reg_Auto_Qualify'].sum())
-	# print(df['Reg_Actual_Qualify'].sum())
-	# print(df['Reg_Finish'].head())
-	# print(df['Reg_Place'].head())
-	# print(df['Reg_Wk1_Place'].head())
-
+	if return_df: return df  # if option is True, return the dataframe
 	return None
 
 
@@ -529,6 +524,7 @@ def get_all_regional_data():
 # ww_df = pd.read_csv('cfo_ww_1b2.csv')
 # print("Load")
 # ww_df = transform_data('cfo_ww_1b.csv', True)
+# ww_df.to_csv('cfo_ww_1c.csv', index=False)
 # print(ww_df.head())
 
 # reg_df = get_all_regions(regions,div=1,num=100,pages=3,sort=0,yr=16)
@@ -539,4 +535,6 @@ def get_all_regional_data():
 # print(rg_df.describe())
 # rg_df.to_csv('cf_regional_invites.csv', index=False)
 
-add_regional_data('cfo_ww_1c.csv', 'cfo_reg_300_1.csv', 'cf_regional_qualifiers.csv', 'cfo_reg_invites.csv',1)
+# add_regional_data('cfo_ww_1c.csv', 'cfo_reg_300_1.csv', 'cf_regional_qualifiers.csv', 'cfo_reg_invites.csv',1)
+ww_open = add_regional_data('cfo_ww_1c.csv', 'cfo_reg_300_1.csv', 'cf_regional_qualifiers.csv', 'cf_regional_invites.csv',1,True)
+ww_open.to_csv('cfo_ww_1_final.csv',index=False)
