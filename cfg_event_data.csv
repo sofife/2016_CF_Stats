@@ -1,0 +1,69 @@
+Event_ID,Games_Year,Event,Type,"Cap (sec, m)","Cap (min, m)","Cap (sec, w)","Cap (min, w)",Venue,Points,Points_Available,Name,Day
+2016_01,2016,1,Time,n/a,n/a,n/a,n/a,Ranch,100,1350,"Ranch Trail Run",1
+2016_02,2016,2,Weight,n/a,n/a,n/a,n/a,Ranch,100,1350,"Ranch Deadlift Ladder",1
+2016_03,2016,3,Time,n/a,n/a,n/a,n/a,Ranch,100,1350,"Ranch Mini Chipper",1
+2016_04,2016,4,Time,n/a,n/a,n/a,n/a,Ocean,100,1350,"Ocean Swim",2
+2016_05,2016,5,Time,3300,55,3300,55,Soccer,100,1350,Murph,3
+2016_06,2016,6,Time,660,11,660,11,Tennis,100,1350,"Squat Clean Pyramid",3
+2016_07,2016,7,Time,900,15,900,15,Tennis,100,1350,"Double DT",3
+2016_08,2016,8,Time,1260,21,1260,21,Soccer,100,1350,"Climbing Snail",4
+2016_09,2016,9,Time,960,16,960,16,Tennis,100,1350,"The Separator",4
+2016_10,2016,10,Time,300,5,300,5,Tennis,100,1350,1,4
+2016_11,2016,11,Time,180,3,180,3,Soccer,50,1350,"Handstand Walk",5
+2016_12,2016,12,Time,120,2,120,2,Soccer,50,1350,"Suicide Sprint",5
+2016_13,2016,13,Time,180,3,180,3,Soccer,50,1350,"The Plow",5
+2016_14,2016,14,Time,660,11,660,11,Tennis,100,1350,"Rope Chipper",5
+2016_15,2016,15,Time,600,10,600,10,Tennis,100,1350,Redemption,5
+2015_01,2015,1,Time,3600,60,3600,60,Ocean,100,1200,"Pier Paddle",1
+2015_02,2015,2,Time,900,15,900,15,Tennis,100,1200,"Sandbag 2015",1
+2015_03,2015,3,Time,3300,55,3300,55,Soccer,100,1200,Murph,3
+2015_04,2015,4,Score,n/a,n/a,n/a,n/a,Tennis,100,1200,"Snatch Speed Ladder",3
+2015_05,2015,5,Time,720,12,720,12,Tennis,100,1200,"Heavy DT",3
+2015_06,2015,6,Time,n/a,n/a,n/a,n/a,Soccer,50,1200,"Sprint Course 1",4
+2015_07,2015,7,Time,30,0.5,30,0.5,Soccer,50,1200,"Sprint Course 2",4
+2015_08,2015,8,Time,720,12,720,12,Soccer,100,1200,"Soccer Chipper",4
+2015_09,2015,9,Weight,n/a,n/a,n/a,n/a,Tennis,100,1200,"Clean and Jerk",4
+2015_10,2015,10,Time,600,10,600,10,Tennis,100,1200,"Triangle Couple",4
+2015_11,2015,11,Time,1500,25,1500,25,Soccer,100,1200,"Midline Madness",5
+2015_12,2015,12,Time,360,6,360,6,Tennis,100,1200,"Pedal to the Metal 1",5
+2015_13,2015,13,Time,420,7,420,7,Tennis,100,1200,"Pedal to the Metal 2",5
+2014_01,2014,1,Time,3000,50,3000,50,Beach,100,1200,"The Beach",1
+2014_02,2014,2,Weight,n/a,n/a,n/a,n/a,Tennis,100,1200,"Overhead Squat",1
+2014_03,2014,3,Time,n/a,n/a,n/a,n/a,Outside,100,1200,"Triple 3",3
+2014_04,2014,4,Time,120,2,120,2,Soccer,50,1200,"Sprint Sled 1",3
+2014_05,2014,5,Time,180,3,180,3,Soccer,50,1200,"Sprint Sled 2",3
+2014_06,2014,6,Time,420,7,420,7,Tennis,100,1200,"21-15-9 Complex",3
+2014_07,2014,7,Time,1080,18,1080,18,Soccer,100,1200,"Muscle-Up Biathlon",4
+2014_08,2014,8,Time,n/a,n/a,n/a,n/a,Soccer,100,1200,"Spint Carry",4
+2014_09,2014,9,Score,n/a,n/a,n/a,n/a,Tennis,100,1200,"Clean Speed Ladder",4
+2014_10,2014,10,Time,660,11,660,11,Tennis,100,1200,"Push Pull",4
+2014_11,2014,11,Time,660,11,660,11,Soccer,100,1200,"Midline March",5
+2014_12,2014,12,Time,240,4,240,4,Tennis,100,1200,"Thick 'N Quick",5
+2014_13,2014,13,Time,420,7,420,7,Tennis,100,1200,"Double Grace",5
+2013_01,2013,1,Time,1500,25,1500,25,Pool,100,1200,"The Pool",1
+2013_02,2013,2,Time,n/a,n/a,n/a,n/a,Velodrome,100,1200,"Row 1",1
+2013_03,2013,3,Time,7200,120,7800,130,Velodrome,100,1200,"Row 2",1
+2013_04,2013,4,Time,2400,40,2400,40,Track,100,1200,"Burden Run",3
+2013_05,2013,5,Score,n/a,n/a,n/a,n/a,Soccer,100,1200,"Zigzag Sprint",3
+2013_06,2013,6,Time,600,10,600,10,Tennis,100,1200,Legless,3
+2013_07,2013,7,Time,1200,20,1200,20,Soccer,100,1200,"Naughty Nancy",4
+2013_08,2013,8,Weight,n/a,n/a,n/a,n/a,Soccer,100,1200,"Clean & Jerk Ladder",4
+2013_09,2013,9,Time,900,15,900,15,Tennis,100,1200,2007,4
+2013_10,2013,10,Time,n/a,n/a,n/a,n/a,Soccer,100,1200,"Sprint Chipper",5
+2013_11,2013,11,Time,420,7,420,7,Tennis,100,1200,"The Cinco 1",5
+2013_12,2013,12,Time,420,7,420,7,Tennis,100,1200,"The Cinco 2",5
+2012_01,2012,1,Time,n/a,n/a,n/a,n/a,"Camp Pendleton",100,1350,"Pendleton 1",1
+2012_02,2012,2,Time,n/a,n/a,n/a,n/a,"Camp Pendleton",100,1350,"Pendleton 2",1
+2012_03,2012,3,Time,n/a,n/a,n/a,n/a,"Camp Pendleton",100,1350,"Obstacle Course",1
+2012_04,2012,4,Distance,n/a,n/a,n/a,n/a,"HD Center",50,1350,"Broad Jump",3
+2012_05,2012,5,Score,n/a,n/a,n/a,n/a,Track,50,1350,"Ball Toss",3
+2012_06,2012,6,Time,780,13,780,13,Track,100,1350,"Track Triplet",3
+2012_07,2012,7,Time,600,10,600,10,Tennis,100,1350,"Medball - HSPU",3
+2012_08,2012,8,Time,n/a,n/a,n/a,n/a,Track,50,1350,Sprint,4
+2012_09,2012,9,Time,780,13,780,13,Track,100,1350,"Rope - Sled",4
+2012_10,2012,10,Weight,n/a,n/a,n/a,n/a,Tennis,100,1350,"Clean Ladder",4
+2012_11,2012,11,Time,900,15,900,15,Tennis,100,1350,Chipper,4
+2012_12,2012,12,Time,540,9,540,9,Tennis,100,1350,"Double Banger",5
+2012_13,2012,13,Time,360,6,360,6,Tennis,100,1350,"Final - Elizabeth",5
+2012_14,2012,14,Time,360,6,360,6,Tennis,100,1350,"Final - Isabel",5
+2012_15,2012,15,Time,360,6,360,6,Tennis,100,1350,"Final - Fran",5
