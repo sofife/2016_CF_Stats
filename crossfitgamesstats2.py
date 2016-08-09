@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup as bs
 import urllib.request
 import pandas as pd
 import numpy as np # for NaN
+import re
+
 
 def makeurl(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp=0):
 	"""Makes the URL to pull data for each region, currently only pulls frontpage of leaderboard."""
@@ -22,36 +24,8 @@ def makeurl(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp=0):
 	return lead + tail
 
 
-games_timecaps = {1:np.NaN}
-
-
-def convert_time(time):
-	"""Input time as a string, return seconds."""
-	try:  
-		minutes = time.split(":")[0]
-		seconds = time.split(":")[1]
-	except:  return np.nan
-
-	time_in_seconds = float(minutes) * 60 + float(seconds)
-
-	if time_in_seconds == 0:  return np.nan
-	else:  return time_in_seconds
-
-
-def convert_event_time(time, event=1):
-	if time[0:3] == "CAP":
-		if "+" in time:
-			sec = games_timecaps[event] + float(time.split('+')[1])
-		else:
-			sec = games_timecaps[event]
-	else:
-		sec = convert_time(time)
-	return int(sec * 100) / 100
-
-
 def get_event_score(score, event, yr):
 	"""Splits the score format from CFG leaderboard"""
-	print(score)
 	
 	if yr == 15 and event == 9:
 		if score[1] == '36T':
@@ -121,23 +95,6 @@ def get_leaderboard_page(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp
 
 	for r in range(1,len(rows)):  # each loop is 1 athlete
 
-		# e01 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e02 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e03 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e04 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e05 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e06 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e07 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e08 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e09 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e10 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e11 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e12 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e13 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e14 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}
-		# e15 = {'place':'', 'points':0, 'event_score':'', 'cap_hit':''}	
-		# e_list = [e01, e02, e03, e04, e05, e06, e07, e08, e09, e10, e11, e12, e13, e14, e15]
-
 		temp_row = bs(rows[r][5:], 'html.parser')  # strip broken tag off beginning, return to BeautifulSoup object
 		lines = temp_row.find_all('td')  # break into individual data
 		# print(lines[3].get_text())
@@ -147,20 +104,17 @@ def get_leaderboard_page(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp
 		athlete_url.append(temp_row.find('a').get('href'))  # athlete profile link url
 
 		for i in range(0,e_max):  # get each event data for 1 athlete, capped by number of events - e_max
-			# print(i)
 			event_place = ''
 			event_points = 0
 			event_score = ''
 
 			if lines[i+2].get_text().split('\n')[1] == "WD":
-				# e_list[i]['place'], e_list[i]['points'], e_list[i]['event_score'] = "WD", np.nan, np.nan			
 				event_place, event_points, event_score = "WD", np.nan, np.nan
 			elif lines[i+2].get_text().split('\n')[1] == "CUT":
 				event_place, event_points, event_score = "CUT", np.nan, np.nan
 			elif lines[i+2].get_text().split('\n')[1] == "--":
 				event_place, event_points, event_score = "--", np.nan, np.nan
 			else:
-				# e_list[i]['place'], e_list[i]['points'], e_list[i]['event_score'] = get_event_score(lines[i+2].get_text().split('\n'), i+1)
 				event_place, event_points, event_score = get_event_score(lines[i+2].get_text().split('\n'), i+1, yr)
 		
 			event_list[i]['place'].append(event_place)
@@ -175,12 +129,8 @@ def get_leaderboard_page(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp
 			event_list[j]['score'].append(np.NaN)
 			event_list[j]['cap_hit'].append(np.NaN)
 
-		# print(e01, '\n', e02, '\n', e03, '\n', e04, '\n', e05, '\n', e06, '\n', e07, '\n', e08, '\n', e09, '\n', e10, '\n', e11, '\n', e12, '\n', e13, '\n', e14, '\n', e15)
-		# print(e_list)
-		# break
-
 	df = pd.DataFrame({'Athlete':name,
-					   'Games_Place':games_place,
+					   'Games_Finish':games_place,
 					   'Athlete_URL':athlete_url,
 					   'Division':div,
 					   'Year':int('20'+str(yr)),
@@ -214,35 +164,116 @@ def get_leaderboard_page(reg=0,regional=0,div=1,num=100,page=1,sort=0,yr=16,comp
 					   'G_13_Points':event_list[12]['points'],
 					   'G_14_Points':event_list[13]['points'],
 					   'G_15_Points':event_list[14]['points'],
-					   'G_01_Score':event_list[0]['score'],
-					   'G_02_Score':event_list[1]['score'],
-					   'G_03_Score':event_list[2]['score'],
-					   'G_04_Score':event_list[3]['score'],
-					   'G_05_Score':event_list[4]['score'],
-					   'G_06_Score':event_list[5]['score'],
-					   'G_07_Score':event_list[6]['score'],
-					   'G_08_Score':event_list[7]['score'],
-					   'G_09_Score':event_list[8]['score'],
-					   'G_10_Score':event_list[9]['score'],
-					   'G_11_Score':event_list[10]['score'],
-					   'G_12_Score':event_list[11]['score'],
-					   'G_13_Score':event_list[12]['score'],
-					   'G_14_Score':event_list[13]['score'],
-					   'G_15_Score':event_list[14]['score']})
+					   'G_01_Raw_Score':event_list[0]['score'],
+					   'G_02_Raw_Score':event_list[1]['score'],
+					   'G_03_Raw_Score':event_list[2]['score'],
+					   'G_04_Raw_Score':event_list[3]['score'],
+					   'G_05_Raw_Score':event_list[4]['score'],
+					   'G_06_Raw_Score':event_list[5]['score'],
+					   'G_07_Raw_Score':event_list[6]['score'],
+					   'G_08_Raw_Score':event_list[7]['score'],
+					   'G_09_Raw_Score':event_list[8]['score'],
+					   'G_10_Raw_Score':event_list[9]['score'],
+					   'G_11_Raw_Score':event_list[10]['score'],
+					   'G_12_Raw_Score':event_list[11]['score'],
+					   'G_13_Raw_Score':event_list[12]['score'],
+					   'G_14_Raw_Score':event_list[13]['score'],
+					   'G_15_Raw_Score':event_list[14]['score']})
 
 	if write_to_csv:
 		df.to_csv(output_filename, index=True)
 		return None
-	# print(name)
-	# print(athlete_url)
-	# print(event_list[1]['place'])
-	# print(event_list[1]['points'])
-	# print(event_list[1]['event_score'])
 
 	return df
 
 
+events_raw = ['G_01_Raw_Score', 'G_02_Raw_Score', 'G_03_Raw_Score', 'G_04_Raw_Score', 'G_05_Raw_Score',
+			  'G_06_Raw_Score', 'G_07_Raw_Score', 'G_08_Raw_Score', 'G_09_Raw_Score', 'G_10_Raw_Score', 
+			  'G_11_Raw_Score', 'G_12_Raw_Score', 'G_13_Raw_Score', 'G_14_Raw_Score', 'G_15_Raw_Score']
+
+events = ['G_01_Score', 'G_02_Score', 'G_03_Score', 'G_04_Score', 'G_05_Score',
+		  'G_06_Score', 'G_07_Score', 'G_08_Score', 'G_09_Score', 'G_10_Score', 
+		  'G_11_Score', 'G_12_Score', 'G_13_Score', 'G_14_Score', 'G_15_Score']
+
+
+def convert_non_time(score):
+	return re.findall(r'\d{1,3}\.?\d{0,2}', score)[0]
+
+
+def convert_time(time, event_id, div):
+	"""Input time as a string, return seconds."""
+	# print(e_df.loc[e_df['Event_ID'] == event_id, 'Cap (sec, m)'])
+	# print(event_id, time, div)
+
+	if "CAP" in time:  # could definitely use some refactoring b/c of the womens cap issue
+		print(e_df.loc[e_df['Event_ID'] == event_id, 'Cap (sec, m)'])
+		if "+" in time:
+			s = int(e_df.loc[e_df['Event_ID'] == event_id, 'Cap (sec, m)']) + int(time.split('+')[1].strip())
+		else:
+			s = int(e_df.loc[e_df['Event_ID'] == event_id, 'Cap (sec, m)'])
+		# print(s)
+		return float(s)
+	elif time:
+		if time.count(':') == 2:
+			h, m, s = time.split(':')
+			return float(h)*3600 + float(m)*60 + float(s.strip())
+		elif time.count(':') == 1:
+			m, s = time.split(':')
+			return float(m)*60 + float(s.strip())
+		else:
+			s = time
+			return float(s.strip())
+	else:
+		return np.NaN
+
+
+def convert_score(score, event, year, div):
+	event_id = str(year) + "_" + str(event).zfill(2) 
+	print(event_id, score, div)
+
+	if score == np.NaN:
+		print(1)
+		return np.NaN
+	print(2)
+	if 'lb' in score:
+		print(3)
+		return convert_non_time(score)
+	print(4)
+	if 'pt' in score:
+		print(5)
+		return convert_non_time(score)
+	print(6)
+	if 'in' in score:
+		print(7)
+		return convert_non_time(score)
+	print(8)
+	return convert_time(score, event_id, div)
+
+
 def transform_df(df):
+
+	for i in range(0,15):
+		# print(events[i])
+		df['Games_Score'] = df['Games_Finish'].apply(lambda x: x.split(' ')[1][1:-1] if ')' in x else np.NaN)
+		# df['Games_Score'] = df['Games_Score'].
+		df['Games_Place'] = df['Games_Finish'].apply(lambda x: x.split(' ')[0] if ')' in x else x)
+		df[events[i]] = df[events_raw[i]].apply(str)
+		df[events[i]] = df.apply(lambda x: convert_score(x[events[i]], i+1, x['Year'], x['Division']), axis=1)
+
+	print(df['G_04_Score'].head(5))
+	print(df['G_05_Score'].head(5))
+	print(df.head(5))
+
+	return df
+
+
+def transform_df2(df):
+
+	df['Year'] = df['Year'].apply(lambda x: str(x)[0:4])
+	df['Event_#'] = df['Event_#'].apply(lambda x: str(x).split('.')[0])
+	df['Event_Raw_Score'] = df['Event_Raw_Score'].apply(str)
+	df['Event_Score'] = df.apply(lambda x: convert_score(x['Event_Raw_Score'], x['Event_#'], x['Year'], x['Division']), axis=1)
+
 	return df
 
 
@@ -269,4 +300,11 @@ def get_all_games(filename=None):
 
 
 # get_leaderboard_page(0,0,1,100,1,0,12,2,True)
-get_all_games('cf_games_results_all.csv')
+# get_all_games('cf_games_results_all.csv')
+# df = pd.read_csv('cf_games_results_all.csv')
+df = pd.read_csv('cf_games_results_all_t2.csv')
+e_df = pd.read_csv('cfg_event_data.csv')
+# print(e_df.head())
+t_df = transform_df2(df)
+t_df.to_csv('cf_games_results_all_t3.csv')
+
