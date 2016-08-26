@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np # for NaN
-from sklearn.linear_model import LinearRegression # Import the linear regression class
+# from sklearn.linear_model import LinearRegression # Import the linear regression class
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.set(context="paper", font="monospace")
 
 
 def combine_all():
@@ -51,7 +54,7 @@ def combine_all():
 	df_o['O_03n'] = df_o.apply(lambda x: (x['Wk3_Score'] - o_stats[3][x['Division']][1]) / (o_stats[3][x['Division']][0] - o_stats[3][x['Division']][1]), axis=1)
 	df_o['O_04n'] = df_o.apply(lambda x: (x['Wk4_Score'] - o_stats[4][x['Division']][1]) / (o_stats[4][x['Division']][0] - o_stats[4][x['Division']][1]), axis=1)
 	df_o['O_05n'] = df_o.apply(lambda x: (x['Wk5_Score'] - o_stats[5][x['Division']][0]) / (o_stats[5][x['Division']][1] - o_stats[5][x['Division']][0]), axis=1)
-	df_o['O_Ov_n'] = (df_o['O_01n'] + df_o['O_02n'] + df_o['O_03n'] + df_o['O_04n'] + df_o['O_05n']) / 5
+	df_o['O_Ov_n'] = (df_o['O_01n'] + df_o['O_02n'] + df_o['O_03n'] + df_o['O_04n'] + df_o['O_05n']) / 5 * 100
 
 	# print(df_o[['O_01n','O_02n','O_03n','O_04n','O_05n','O_Ov_n']].head())
 	df_o['O_Top40'] = df_o['Athlete'].apply(lambda x: 1 if x in games_athletes else 0)
@@ -107,9 +110,7 @@ def combine_all():
 		df_g[df_g[place] == 'WD'] = np.NaN
 		df_g['G_OpenScore'] = df_g['G_OpenScore'] + df_g[place].astype(float)
 
-
-
-	df_g['G_Ov_n'] = df_g['G_Ov_n'] / sum(games_event_wt)
+	df_g['G_Ov_n'] = df_g['G_Ov_n'] / sum(games_event_wt) * 100
 	df_g['G_OpenPlace'] = 0
 	df_g['G_OpenPlace'] = df_g.groupby('Division')['G_OpenScore'].rank(method='first')
 	df_g['G_Top40'] = df_g['Games_Place']
@@ -119,7 +120,7 @@ def combine_all():
 	df_g['G_Soccer'] = df_g['G_03_Points'] + df_g['G_08_Points'] + df_g['G_11_Points'] + df_g['G_12_Points'] + df_g['G_13_Points']
 	df_g['G_Tennis'] = df_g['G_06_Points'] + df_g['G_07_Points'] + df_g['G_09_Points'] + df_g['G_10_Points'] + df_g['G_14_Points'] + df_g['G_15_Points']
 	# df_g[df_g['Division'] == 1]['G_OpenPlace'] = df_g.apply(lambda x: df_g.loc[df_g['Division'] == x['Division'],'G_OpenScore'].rank(), axis=1)
-	print(df_g[['G_Ranch','G_Beach']].head(10))
+	# print(df_g[['G_Ranch','G_Beach']].head(10))
 	# print(df_g[['G_01n','G_Ov_n','Athlete']].head())
 
 
@@ -138,9 +139,87 @@ def combine_all():
 	# OR ADD OPEN/REG OVERALL PLACE 1-40 -> THINK IT THROUGH, DO BOTH AND COMPARE
 
 	# print(df_all.head())
-	df_all.to_csv('cf_corr.csv')
+	df_all.to_csv('cf_combined_all.csv')
 	# b = pd.merge(df_pairs, data_df, left_on='city2', right_on='city', how='left').set_index(['city1', 'city2'])
 	return None
 
-combine_all()
 
+def heatmap():
+	df_all = pd.read_csv('cf_combined_all.csv')
+	df_all = df_all[df_all['Division'] == 1]
+	# print(df_all.head())
+	pts_list = ['Games_Place','Games_Score',
+				'O_01n','O_02n','O_03n','O_04n','O_05n',
+				'R_01n','R_02n','R_03n','R_04n','R_05n','R_06n','R_07n',
+				'G_01n','G_02n','G_03n','G_04n','G_05n','G_06n','G_07n','G_08n','G_09n','G_10n','G_11n','G_12n','G_13n','G_14n','G_15n'
+				]
+
+	plc_list = ['Games_Place',
+				# 'Games_Score',
+				# 'O_01_Place','O_02_Place','O_03_Place','O_04_Place','O_05_Place',
+				# 'R_01_Place','R_02_Place','R_03_Place','R_04_Place','R_05_Place','R_06_Place','R_07_Place',
+				# 'G_01_Place','G_02_Place','G_03_Place','G_04_Place','G_05_Place','G_06_Place','G_07_Place','G_08_Place',
+				# 'G_09_Place','G_10_Place','G_11_Place','G_12_Place','G_13_Place','G_14_Place','G_15_Place'
+				]
+
+	oth_list = ['Games_Score','G_Ranch','G_Beach','G_Tennis','G_Soccer']
+
+	df_pts = df_all[pts_list]
+	df_plc = df_all[plc_list]
+	df_oth = df_all[oth_list]	
+
+	# print(1)
+	# df_corr = sns.load_dataset(df_pts)
+	# print(df.columns.values)
+	# df.drop('Unnamed',axis=1,inplace=True)
+	# print(df.head())
+	# df_corr = df_pts.corr()
+	df_corr = df_plc.corr()
+	print(df_corr.head(1))
+	# df_corr = df_oth.corr()
+	# df_corr = df_corr.abs()
+	# print(df_corr.head())
+	# df_corr[df_corr == 1] = np.NaN
+	# df_corr[df_corr.abs() != df_corr.abs().max()] = np.NaN
+	# print(df_corr.max())
+	# print(df_corr['G_07n'])
+	f, ax = plt.subplots(figsize=(12, 9))
+	sns.heatmap(df_corr, vmax=.8, square=True)
+	plt.yticks(rotation=0)
+	plt.xticks(rotation=80)
+	# networks = df_corr.columns.get_level_values("network")
+	# for i, network in enumerate(networks):
+	#     if i and network != networks[i - 1]:
+	#         ax.axhline(len(networks) - i, c="w")
+	#         ax.axvline(i, c="w")
+	f.tight_layout()
+	plt.show()
+
+
+def all_events():
+	df_all = pd.read_csv('cf_combined_all.csv')
+	df_all['Ultra_Score'] = (df_all['O_Ov_n'] * 5 + df_all['R_Ov_n'] * 7 + df_all['G_Ov_n'] * 13.5) / 25.5
+	# print(df_all[['Athlete','O_Ov_n','R_Ov_n','G_Ov_n','Ultra_Score']])
+	df_all['Ultra_Place'] = df_all.groupby(['Division'])['Ultra_Score'].rank(method='first',ascending=False)
+	print(df_all.loc[df_all['Division'] == 2, ['Athlete','Ultra_Score','Ultra_Place']])
+	df_all.to_csv('cf_combined_all.csv')
+
+
+def modality():
+	df_all = pd.read_csv('cf_combined_all.csv')
+	df_all['G_SingleModal'] = df_all['G_02_Points'] + df_all['G_04_Points'] + df_all['G_06_Points'] + df_all['G_11_Points'] + df_all['G_12_Points'] + df_all['G_13_Points']
+	df_all['G_MultiModal'] = df_all['Games_Score'] - df_all['G_SingleModal']
+	df_all['G_Ranch_Place'] = df_all.groupby(['Division'])['G_Ranch'].rank(method='first',ascending=False)
+	df_all['G_Beach_Place'] = df_all.groupby(['Division'])['G_Beach'].rank(method='first',ascending=False)
+	df_all['G_Soccer_Place'] = df_all.groupby(['Division'])['G_Soccer'].rank(method='first',ascending=False)
+	df_all['G_Tennis_Place'] = df_all.groupby(['Division'])['G_Tennis'].rank(method='first',ascending=False)
+	df_all['G_Special_Place'] = df_all.groupby(['Division'])['G_Special'].rank(method='first',ascending=False)
+	print(df_all.loc[df_all['Division'] == 1, ['Athlete','G_Ranch','G_Ranch_Place']])
+	df_all.to_csv('cf_combined_all.csv')
+
+
+
+# combine_all()
+# heatmap()
+all_events()
+modality()
